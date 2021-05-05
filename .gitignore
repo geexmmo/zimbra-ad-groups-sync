@@ -1,9 +1,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-lib
-lib64
-bin
+lib/
+lib64/
+bin/
 .vscode
 pyvenv.cfg
-
