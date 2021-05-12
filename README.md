@@ -24,6 +24,10 @@ RedHat/CentOS:
 # Scripts
 ## settings.py
 *settings.py* should be modified according to your AD setup, other scripts are heavily dependent on correct configuration supplied in this file.
+`ADdomain` is your domain DC 
+`ADsearchOU` is the place where group search will be performed in ad-to-zimbra.py and group creation in zimbra-to-ad.py
+`ZimbraDumpFile` is zmprov group dump for zimbra-to-ad.py, it's creatinon will be described further in this document.
+`regexMemberCheck` is used in zimbra-to-ad.py to filter out members from domains that does not exist in AD deployment.
 
 ## ad-to-zimbra.py
 ad-to-zimbra.py gets information out of AD and creates batch file for zmprov
@@ -33,7 +37,15 @@ User without mail field are skipped.
 *There is a little hack in user DN search for members in OU's wich names contains special symbols in their DN, Users DN is cut to conents of it's CN part with hope that it really contains user's name, if first search fails - another one is lauched for user's 'name' field.*
 
 ## zimbra-to-ad.py
+zimbra-to-ad.py gets information of existing group in zimbra from zimbra zmprov dump file(ZimbraDumpFile), creation of this file described in troubleshooting part. ZimbraDumpFile is simply a list of existing Distribution groups and members of each group form Zimbra. 
+Script loops trough it and tries to create similar groups populated with members in AD.
+
+
 # Setup and troubleshooting
+#### Creating ZimbraDumpFile for zimbra-to-ad.py
+From zimbra host as user zimbra run:
+`zmprov gadl -v > /opt/zimbra/zimbra-adgroup-sync/zimbra-test.txt`
+
 #### If you are using Python's virtual environment to install python-ldap
 Crontab job may fail if any of required packages or python versions is not avaiable outside virtual environment.
 
