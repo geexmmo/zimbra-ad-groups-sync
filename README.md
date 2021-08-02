@@ -92,10 +92,3 @@ You may run batch import as *root* - or *su* into and run it as user *zimbra*
  
  Piping whole file as root user
  `cat commands.zmp | su - zimbra -c zmprov`
-
-
-Example crontab
-*This will run syncDL.sh and run batch import every 4 hours*
-```bash
-0 */4 * * * /opt/zimbra/zimbra-adgroup-sync/syncDL.sh && zmprov -f /opt/zimbra/zimbra-adgroup-sync/ad-to-zimbra.log
-```
