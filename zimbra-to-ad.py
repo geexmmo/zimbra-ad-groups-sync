@@ -8,7 +8,8 @@ import logging
 from importlib import reload
 reload(logging)
 logger = logging.getLogger()
-logging.basicConfig(filename='zimbra-to-ad.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+# logging.basicConfig(filename='zimbra-export.txt', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 distGrpData = {}
 distGrpCount = len(distGrpData)
@@ -26,7 +27,8 @@ def matchDistGrp(line):
         # data insertion
         distGrpData[distGrpCount] = {'GroupName': match.group()}
         # distGrpData initiated so here is empty list so I can add Members here later
-        distGrpData[distGrpCount]['Members'] = []
+        if not distGrpData[distGrpCount]['Members']:
+            distGrpData[distGrpCount]['Members'] = []
 
     # tries to match email of dist group
     regexDistGrpEmail = '(?<=mail:\s)\S{1,}@\S{2,}\.\S{2,}$'
@@ -47,20 +49,6 @@ def matchDistGrp(line):
         # appends data to list
         distGrpData[distGrpCount]['Members'].append(match.group())
 
-
-def memberCheck(conn, member, group):
-    # check if member is from managed domain name
-    regexMemberCheck = settings['regexMemberCheck']
-    match = re.search(regexMemberCheck, member)
-    if match:
-        if adfunctions.searchADUserExists(conn, member) is True and adfunctions.searchADMembership(conn, member, group) is False:
-            return True
-        else:
-            logging.info('User exists and is in group already or disabled u: %s (g: %s)', member, group)
-            return False
-    else:
-        logging.warning('Member email is not from allowed domain: u: %s d: %s', member, regexMemberCheck)
-        return False
 
 # opens file and loops trough lines
 with open(settings['ZimbraDumpFile'], 'r') as textfile:
@@ -86,9 +74,8 @@ for i in distGrpData:
         if grname and not adfunctions.searchADGroupExists(conn, grname):
             adfunctions.addADGroup(conn, grname,gremail,grdispname)
         for member in members:
-            if memberCheck(conn, member, grname):
-                logging.info('Adding %s to %s', member, grname)
-                adfunctions.addADMembership(conn, member, grname)
+            logging.info('Adding %s to %s', member, grname)
+            adfunctions.addADMembership(conn, member, grname)
     else:
         # TODO log group with no members and skip it
         logging.warning('Group in Zimbra dump with empty member list  %s, skipping', distGrpData[i])
